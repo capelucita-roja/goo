@@ -1,49 +1,45 @@
-pipeline {
-    agent {
-        label 'agent3'
-    }
 
-    environment {
-        GIT_URL = 'https://github.com/capelucita-roja/goo.git'
-        BUILD_DIR = 'outyet' // <-- AJUSTA ESTA RUTA según el main.go que te interese
-    }
+
+
+pipeline {
+    agent { label 'agent1' }
 
     stages {
-        stage('Clonar proyecto') {
+        stage('Clonar repositorio') {
             steps {
-                git url: "${GIT_URL}", branch: 'master'
+                git 'https://github.com/capelucita-roja/goo.git'
             }
         }
 
-        stage('Verificar archivos') {
+        stage('Instalar go-junit-report') {
             steps {
-                sh 'ls -R'
-            }
-        }
-
-        stage('Preparar entorno') {
-            steps {
-                sh 'go mod tidy'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                sh 'go test ./... || true' // permite continuar si no hay tests
+                sh 'go install github.com/jstemmer/go-junit-report@latest'
             }
         }
 
         stage('Build') {
             steps {
-                sh 'mkdir -p build'
-                sh "go build -o build/app ./${BUILD_DIR}"
+                sh '''
+                    cd gotests
+                    go build ./...
+                '''
             }
         }
-    }
 
-    post {
-        failure {
-            echo 'Falló el pipeline.'
+        stage('Ejecutar pruebas') {
+            steps {
+                sh '''
+                    go version
+                    cd gotests
+                    go mod tidy
+                    go test -v ./... | /home/jenkins/go/bin/go-junit-report > result.xml
+                '''
+            }
+            post {
+                always {
+                    junit '**/result.xml'
+                }
+            }
         }
     }
 }
