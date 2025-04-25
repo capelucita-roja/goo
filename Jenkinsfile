@@ -1,42 +1,20 @@
+
+
 pipeline {
     agent { label 'agent3' }
 
-    environment {
-        GO111MODULE = 'on'
-    }
-
     stages {
-        stage('Clonar proyecto') {
+        stage('Checkout') {
             steps {
-                git url: 'https://github.com/capelucita-roja/goo.git', branch: 'master'
+                git  'https://github.com/capelucita-roja/goo.git', branch: 'master'
             }
         }
-
-        stage('Preparar entorno') {
-            steps {
-                sh 'go mod tidy'
-            }
-        }
-
         stage('Test') {
             steps {
-                sh 'go test ./...'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                sh 'go build -o build/app'
+                sh 'go test ./... -v -json > result.json'
             }
         }
     }
 
-    post {
-        failure {
-            echo "Falló el pipeline."
-        }
-        success {
-            echo "Pipeline ejecutado correctamente en agent3."
-        }
-    }
+
 }
