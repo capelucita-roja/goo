@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Clonar proyecto') {
             steps {
-                git url: 'https://github.com/capelucita-roja/goo.git', branch: 'main'
+                git url: 'https://github.com/capelucita-roja/goo.git', branch: 'master'
             }
         }
 
