@@ -1,14 +1,22 @@
 pipeline {
-    agent { label 'agent3' }
+    agent {
+        label 'agent3'
+    }
 
     environment {
-        GO111MODULE = 'on'
+        GIT_URL = 'https://github.com/capelucita-roja/goo.git'
     }
 
     stages {
         stage('Clonar proyecto') {
             steps {
-                git url: 'https://github.com/capelucita-roja/goo.git', branch: 'master'
+                git url: "${GIT_URL}", branch: 'master'
+            }
+        }
+
+        stage('Verificar archivos') {
+            steps {
+                sh 'ls -R'
             }
         }
 
@@ -26,19 +34,15 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'go build -o build/app'
+                // Ajusta el path si tu main.go está en otro lugar
+                sh 'go build -o build/app ./cmd/doc'
             }
         }
     }
 
     post {
         failure {
-            echo "Falló el pipeline."
-        }
-        success {
-            echo "Pipeline ejecutado correctamente en agent3."
+            echo 'Falló el pipeline.'
         }
     }
 }
-
-
